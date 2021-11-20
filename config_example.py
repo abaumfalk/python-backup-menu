@@ -21,6 +21,7 @@ actions = {
         repo_folder,
         'Silentmaxx-borg',
     ),
+    'mount USB disk': lambda: mount_manager(['UUID=5938fa62-a450-4cf6-8a5d-c04f061710fa'], sudo=True),
 }
 
 options = {
@@ -28,9 +29,18 @@ options = {
         'mount local',
         'borg backup',
     ],
+    'borg backup to USB disk': [
+        'mount USB disk',
+        'borg backup',
+    ],
     'mount local borg backup': [
         'mount local',
         'mount Silentmaxx-borg',
         'show mountpoint',
-    ]
+    ],
+    'mount borg backup from USB disk': [
+        'mount USB disk',
+        'mount Silentmaxx-borg',
+        'show mountpoint',
+    ],
 }
