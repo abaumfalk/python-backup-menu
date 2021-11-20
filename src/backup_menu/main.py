@@ -33,7 +33,7 @@ def mount_manager(mount_args, sudo=False):
         try:
             yield Path(target)
         finally:
-            cmd = ['sudo', '-S', 'umount', target]
+            cmd = ['umount', target]
             if sudo:
                 cmd = prepend_sudo(cmd)
             subprocess.run(cmd, check=True)
