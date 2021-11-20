@@ -12,6 +12,7 @@ pip install wheel
 pip install pytest
 pip install pytest-cov
 pip install pytest-mock
+pip install pylint
 pip install -r requirements.txt
 pip install -e .
 

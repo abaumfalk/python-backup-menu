@@ -1,5 +1,9 @@
+"""
+Module providing a general backup menu.
+"""
 import argparse
 import importlib.util
+import os
 import subprocess
 import sys
 from contextlib import contextmanager, ExitStack
@@ -11,12 +15,18 @@ from typing import ContextManager
 
 
 @contextmanager
-def mount_manager(mount_options, sudo=False):
-    def prepend_sudo(c):
-        return ['sudo'] + c
+def mount_manager(mount_args, sudo=False):
+    """A context manager for filesystem mounts.
+
+    :param mount_args: arguments for the mount command
+    :param sudo: boolean indicating if root rights are required to execute the mount
+    :return: yields the mount point
+    """
+    def prepend_sudo(command):
+        return ['sudo'] + command
 
     with TemporaryDirectory() as target:
-        cmd = ['mount', *mount_options, target]
+        cmd = ['mount', *mount_args, target]
         if sudo:
             cmd = prepend_sudo(cmd)
         subprocess.run(cmd, check=True)
@@ -30,6 +40,14 @@ def mount_manager(mount_options, sudo=False):
 
 
 def backup_borg(repo_name, source, repo_folder, exclude_from=None):
+    """Execute a borg backup.
+
+    :param repo_name: name of the borg repo
+    :param source: sources to be backed up
+    :param repo_folder: path to the borg repo
+    :param exclude_from: path to a borg exclude file
+    :return: name of the borg archive that was added to the repo
+    """
     now = datetime.now()
     name = now.strftime("%Y%m%d-%H%M%S")
 
@@ -46,20 +64,25 @@ def backup_borg(repo_name, source, repo_folder, exclude_from=None):
     ]
     if exclude_from is not None:
         cmd.append(f"--exclude-from={exclude_from}")
-    env = {
-        'BORG_RELOCATED_REPO_ACCESS_IS_OK': 'yes',
-    }
-    fp = subprocess.run(cmd, check=False)
+    my_env = os.environ.copy()
+    my_env['BORG_RELOCATED_REPO_ACCESS_IS_OK'] = 'yes'
+    finished_process = subprocess.run(cmd, env=my_env, check=False)
 
     # check return code (0:ok, 1:warning)
-    if fp.returncode not in [0, 1]:
-        raise Exception(f"Command returned error-code {fp.returncode}")
+    if finished_process.returncode not in [0, 1]:
+        raise Exception(f"Command returned error-code {finished_process.returncode}")
 
     return name
 
 
 @contextmanager
 def mount_borg(repo_folder, repo_name):
+    """Context manager mounting a borg repo.
+
+    :param repo_folder: folder containing the borg repo
+    :param repo_name: name of the borg repo
+    :return: yields the mount point where the repo was mounted
+    """
     with TemporaryDirectory() as target:
         cmd = [
             "/usr/bin/borg",
@@ -77,19 +100,25 @@ def mount_borg(repo_folder, repo_name):
             target
         ]
         while True:
-            fp = subprocess.run(cmd, check=False, capture_output=True)
-            if fp.returncode == 0:
+            finished_process = subprocess.run(cmd, check=False, capture_output=True)
+            if finished_process.returncode == 0:
                 break
-            input(f"Error {fp.stderr}, RETURN to retry")
+            input(f"Error {finished_process.stderr}, RETURN to retry")
 
 
 def show_mount_point(mount_point):
+    """Show the content of a mount point and prompt for confirmation when finished.
+
+    :param mount_point: path to the mount point
+    """
     cmd = ['xdg-open', mount_point]
     subprocess.run(cmd, check=True)
     input(f"backup is mounted at {mount_point} - press ENTER to unmount")
 
 
-class Runner:
+class MenuApp:  # pylint: disable=too-few-public-methods
+    """Class representing the menu-controlled application.
+    """
     def __init__(self, title, actions, options):
         self.title = title
 
@@ -101,6 +130,8 @@ class Runner:
         self.options = options
 
     def start(self):
+        """Starts the menu app.
+        """
         self._show_title()
         option = self._get_option()
 
@@ -120,8 +151,8 @@ class Runner:
         input("Ready - press ENTER to finish.")
 
     def _show_title(self):
-        for t in self.title:
-            print(t)
+        for line in self.title:
+            print(line)
 
     def _get_option(self):
         keys = list(self.options.keys())
@@ -148,6 +179,8 @@ class Runner:
 
 
 def main():
+    """Entry point for the menu application.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', dest='config', type=Path, help="path to a configuration file", required=True)
 
@@ -165,5 +198,5 @@ def main():
     actions = config.actions
     options = config.options
 
-    r = Runner(title, actions, options)
-    r.start()
+    app = MenuApp(title, actions, options)
+    app.start()

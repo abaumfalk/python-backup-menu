@@ -1,5 +1,3 @@
-import subprocess
-
 from backup_menu.main import mount_manager, backup_borg, mount_borg
 
 title = [
