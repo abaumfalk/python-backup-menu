@@ -58,10 +58,46 @@ def backup_borg(repo_name, source, repo_folder, exclude_from=None):
     return name
 
 
+@contextmanager
+def mount_borg(repo_folder, repo_name):
+    with TemporaryDirectory() as target:
+        cmd = [
+            "/usr/bin/borg",
+            "mount",
+            f"{repo_folder / repo_name}",
+            target
+        ]
+        subprocess.run(cmd, check=True)
+
+        yield target
+
+        cmd = [
+            "/usr/bin/borg",
+            "umount",
+            target
+        ]
+        while True:
+            fp = subprocess.run(cmd, check=False, capture_output=True)
+            if fp.returncode == 0:
+                break
+            input(f"Error {fp.stderr}, RETURN to retry")
+
+
+def show_mount_point(mount_point):
+    cmd = ['xdg-open', mount_point]
+    subprocess.run(cmd, check=True)
+    input(f"backup is mounted at {mount_point} - press ENTER to unmount")
+
+
 class Runner:
     def __init__(self, title, actions, options):
         self.title = title
-        self.actions = actions
+
+        self.actions = {
+            'show mountpoint': show_mount_point
+        }
+        self.actions.update(actions)
+
         self.options = options
 
     def start(self):
