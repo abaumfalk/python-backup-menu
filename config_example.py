@@ -22,6 +22,7 @@ actions = {
         'Silentmaxx-borg',
     ),
     'mount USB disk': lambda: mount_manager(target='/media/baumfalk/TOSHIBA_EXT4'),
+    'mount NAS': lambda: mount_manager(mount_args=['192.168.0.34:/volume1/Arno'], sudo=True),
 }
 
 options = {
@@ -33,6 +34,10 @@ options = {
         'mount USB disk',
         'borg backup',
     ],
+    'borg backup to NAS': [
+        'mount NAS',
+        'borg backup',
+    ],
     'mount local borg backup': [
         'mount local',
         'mount Silentmaxx-borg',
@@ -40,6 +45,11 @@ options = {
     ],
     'mount borg backup from USB disk': [
         'mount USB disk',
+        'mount Silentmaxx-borg',
+        'show mountpoint',
+    ],
+    'mount borg backup from NAS': [
+        'mount NAS',
         'mount Silentmaxx-borg',
         'show mountpoint',
     ],
