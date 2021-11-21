@@ -63,71 +63,73 @@ def mount_manager(mount_args=None, target=None, sudo=False):
         yield from try_yield(target)
 
 
-def backup_borg(repo_name, source, repo_folder, exclude_from=None):
-    """Execute a borg backup.
+class Borg:
+    env = {'BORG_RELOCATED_REPO_ACCESS_IS_OK': 'yes'}
 
-    :param repo_name: name of the borg repo
-    :param source: sources to be backed up
-    :param repo_folder: path to the borg repo
-    :param exclude_from: path to a borg exclude file
-    :return: name of the borg archive that was added to the repo
-    """
-    now = datetime.now()
-    name = now.strftime("%Y%m%d-%H%M%S")
+    @classmethod
+    def backup_borg(cls, repo_name, source, repo_folder, exclude_from=None):
+        """Execute a borg backup.
 
-    if not isinstance(source, list):
-        source = [source]
+        :param repo_name: name of the borg repo
+        :param source: sources to be backed up
+        :param repo_folder: path to the borg repo
+        :param exclude_from: path to a borg exclude file
+        :return: name of the borg archive that was added to the repo
+        """
+        now = datetime.now()
+        name = now.strftime("%Y%m%d-%H%M%S")
 
-    cmd = [
-        "/usr/bin/borg",
-        "create",
-        "--list",
-        "--filter=AME",
-        f"{repo_folder / repo_name}::{name}",
-        *source,
-    ]
-    if exclude_from is not None:
-        cmd.append(f"--exclude-from={exclude_from}")
-    my_env = os.environ.copy()
-    my_env['BORG_RELOCATED_REPO_ACCESS_IS_OK'] = 'yes'
-    finished_process = subprocess.run(cmd, env=my_env, check=False)
-
-    # check return code (0:ok, 1:warning)
-    if finished_process.returncode not in [0, 1]:
-        raise Exception(f"Command returned error-code {finished_process.returncode}")
-
-    return name
-
-
-@contextmanager
-def mount_borg(repo_folder, repo_name):
-    """Context manager mounting a borg repo.
-
-    :param repo_folder: folder containing the borg repo
-    :param repo_name: name of the borg repo
-    :return: yields the mount point where the repo was mounted
-    """
-    with TemporaryDirectory() as target:
-        cmd = [
-            "/usr/bin/borg",
-            "mount",
-            f"{repo_folder / repo_name}",
-            target
-        ]
-        subprocess.run(cmd, check=True)
-
-        yield target
+        if not isinstance(source, list):
+            source = [source]
 
         cmd = [
             "/usr/bin/borg",
-            "umount",
-            target
+            "create",
+            "--list",
+            "--filter=AME",
+            f"{repo_folder / repo_name}::{name}",
+            *source,
         ]
-        while True:
-            finished_process = subprocess.run(cmd, check=False, capture_output=True)
-            if finished_process.returncode == 0:
-                break
-            input(f"Error {finished_process.stderr}, RETURN to retry")
+        if exclude_from is not None:
+            cmd.append(f"--exclude-from={exclude_from}")
+        finished_process = subprocess.run(cmd, check=False, env=cls.env)
+
+        # check return code (0:ok, 1:warning)
+        if finished_process.returncode not in [0, 1]:
+            raise Exception(f"Command returned error-code {finished_process.returncode}")
+
+        return name
+
+    @classmethod
+    @contextmanager
+    def mount_borg(cls, repo_folder, repo_name):
+        """Context manager mounting a borg repo.
+
+        :param repo_folder: folder containing the borg repo
+        :param repo_name: name of the borg repo
+        :return: yields the mount point where the repo was mounted
+        """
+        with TemporaryDirectory() as target:
+            cmd = [
+                "/usr/bin/borg",
+                "mount",
+                f"{repo_folder / repo_name}",
+                target
+            ]
+            subprocess.run(cmd, check=True)
+
+            yield target
+
+            cmd = [
+                "/usr/bin/borg",
+                "umount",
+                target
+            ]
+            while True:
+                finished_process = subprocess.run(cmd, check=False, capture_output=True, env=cls.env)
+                if finished_process.returncode == 0:
+                    break
+                input(f"Error {finished_process.stderr}, RETURN to retry")
 
 
 def show_mount_point(mount_point):

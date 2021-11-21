@@ -1,4 +1,4 @@
-from backup_menu.main import mount_manager, backup_borg, mount_borg
+from backup_menu.main import mount_manager, Borg
 
 title = [
     "******************",
@@ -9,7 +9,7 @@ title = [
 
 actions = {
     'mount local': lambda: mount_manager(target='/media/baumfalk/Sicherung'),
-    'borg backup': lambda repo_folder: backup_borg(
+    'borg backup': lambda repo_folder: Borg.backup_borg(
         'Silentmaxx-borg',
         [
             "/media/baumfalk/Daten/",
@@ -17,7 +17,7 @@ actions = {
         repo_folder,
         exclude_from='/home/baumfalk/backup/excludelist-borg',
     ),
-    'mount Silentmaxx-borg': lambda repo_folder: mount_borg(
+    'mount Silentmaxx-borg': lambda repo_folder: Borg.mount_borg(
         repo_folder,
         'Silentmaxx-borg',
     ),
