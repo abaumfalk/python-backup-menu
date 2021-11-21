@@ -45,7 +45,12 @@ def mount_manager(mount_args=None, target=None, sudo=False):
         cmd = ['umount', target]
         if sudo:
             cmd = prepend_sudo(cmd)
-        subprocess.run(cmd, check=True)
+
+        while True:
+            finished_process = subprocess.run(cmd, capture_output=True)
+            if finished_process.returncode == 0:
+                break
+            input(f"Error {finished_process.stderr}, RETURN to retry")
 
     def try_yield(mount_point):
         try:
