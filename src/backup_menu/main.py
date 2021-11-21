@@ -15,28 +15,52 @@ from typing import ContextManager
 
 
 @contextmanager
-def mount_manager(mount_args, sudo=False):
+def mount_manager(mount_args=None, target=None, sudo=False):
     """A context manager for filesystem mounts.
 
     :param mount_args: arguments for the mount command
+    :param target: if not none, target will be appended to the mount command and thus used as mount point
     :param sudo: boolean indicating if root rights are required to execute the mount
     :return: yields the mount point
     """
-    def prepend_sudo(command):
-        return ['sudo'] + command
+    command = ['mount']
+    if mount_args is not None:
+        command += mount_args
 
-    with TemporaryDirectory() as target:
-        cmd = ['mount', *mount_args, target]
+    if target is not None:
+        target = Path(target)
+        if not target.is_dir():
+            raise Exception(f"target mount point '{target}' does not exist")
+        command.append(str(target))
+
+    def prepend_sudo(cmd):
+        return ['sudo'] + cmd
+
+    def do_mount(cmd):
         if sudo:
             cmd = prepend_sudo(cmd)
         subprocess.run(cmd, check=True)
+
+    def do_umount():
+        cmd = ['umount', target]
+        if sudo:
+            cmd = prepend_sudo(cmd)
+        subprocess.run(cmd, check=True)
+
+    if target is None:
+        with TemporaryDirectory() as temp_dir:
+            command.append(temp_dir)
+            do_mount(command)
+            try:
+                yield Path(temp_dir)
+            finally:
+                do_umount()
+    else:
+        do_mount(command)
         try:
-            yield Path(target)
+            yield target
         finally:
-            cmd = ['umount', target]
-            if sudo:
-                cmd = prepend_sudo(cmd)
-            subprocess.run(cmd, check=True)
+            do_umount()
 
 
 def backup_borg(repo_name, source, repo_folder, exclude_from=None):

@@ -8,7 +8,7 @@ title = [
 
 
 actions = {
-    'mount local': lambda: mount_manager(['UUID=c71806bf-2bd1-443e-9f43-3bb610297b8a'], sudo=True),
+    'mount local': lambda: mount_manager(target='/media/baumfalk/Sicherung'),
     'borg backup': lambda repo_folder: backup_borg(
         'Silentmaxx-borg',
         [
@@ -21,7 +21,7 @@ actions = {
         repo_folder,
         'Silentmaxx-borg',
     ),
-    'mount USB disk': lambda: mount_manager(['UUID=5938fa62-a450-4cf6-8a5d-c04f061710fa'], sudo=True),
+    'mount USB disk': lambda: mount_manager(target='/media/baumfalk/TOSHIBA_EXT4'),
 }
 
 options = {
