@@ -47,20 +47,20 @@ def mount_manager(mount_args=None, target=None, sudo=False):
             cmd = prepend_sudo(cmd)
         subprocess.run(cmd, check=True)
 
+    def try_yield(mount_point):
+        try:
+            yield Path(mount_point)
+        finally:
+            do_umount()
+
     if target is None:
         with TemporaryDirectory() as temp_dir:
             command.append(temp_dir)
             do_mount(command)
-            try:
-                yield Path(temp_dir)
-            finally:
-                do_umount()
+            yield from try_yield(Path(temp_dir))
     else:
         do_mount(command)
-        try:
-            yield target
-        finally:
-            do_umount()
+        yield from try_yield(target)
 
 
 def backup_borg(repo_name, source, repo_folder, exclude_from=None):
