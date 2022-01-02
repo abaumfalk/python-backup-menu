@@ -22,7 +22,7 @@ actions = {
         'Silentmaxx-borg',
     ),
     'mount USB disk': lambda: mount_manager(target='/media/baumfalk/TOSHIBA_EXT4'),
-    'mount NAS': lambda: mount_manager(mount_args=['192.168.0.34:/volume1/Arno'], sudo=True),
+    'mount NAS': lambda: mount_manager(target='/media/baumfalk/nas/Arno'),
 }
 
 options = {
