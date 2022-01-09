@@ -90,8 +90,8 @@ class Borg:
         cmd = [
             "/usr/bin/borg",
             "create",
-            "--list",
-            "--filter=AME",
+            "--progress",
+            "--stats",
             f"{repo_folder / repo_name}::{name}",
             *source,
         ]
