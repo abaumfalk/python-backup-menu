@@ -179,8 +179,6 @@ class MenuApp:  # pylint: disable=too-few-public-methods
                 if isinstance(ret, ContextManager):
                     ret = stack.enter_context(ret)
 
-        input("Ready - press ENTER to finish.")
-
     def _show_title(self):
         for line in self.title:
             print(line)
