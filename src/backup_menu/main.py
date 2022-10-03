@@ -64,7 +64,10 @@ def mount_manager(mount_args=None, target=None, sudo=False):
             do_mount(command)
             yield from try_yield(Path(temp_dir))
     else:
-        do_mount(command)
+        if not target.is_mount():
+            do_mount(command)
+        else:
+            print(f"omitting mount - {target} is already a mountpoint")
         yield from try_yield(target)
 
 
