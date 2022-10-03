@@ -93,7 +93,6 @@ class Borg:
         cmd = [
             "/usr/bin/borg",
             "create",
-            "--progress",
             "--stats",
             f"{repo_folder / repo_name}::{name}",
             *source,
