@@ -94,6 +94,7 @@ class Borg:
             "/usr/bin/borg",
             "create",
             "--stats",
+            "--progress",
             f"{repo_folder / repo_name}::{name}",
             *source,
         ]
