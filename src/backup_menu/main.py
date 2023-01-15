@@ -236,9 +236,5 @@ def main():
     args = parse_args()
     config = load_config(args.config)
 
-    title = getattr(config, 'title', [])
-    actions = config.actions
-    options = config.options
-
-    app = MenuApp(title, actions, options)
+    app = MenuApp(getattr(config, 'title', []), config.actions, config.options)
     app.start()
