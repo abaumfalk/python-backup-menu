@@ -216,6 +216,7 @@ class Menu:  # pylint: disable=too-few-public-methods
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', dest='config', type=Path, help="path to a configuration file", required=True)
+    parser.add_argument('-o', dest='option', help="option to be executed (omits the menu)")
 
     return parser.parse_args()
 
@@ -238,8 +239,11 @@ def main():
     args = parse_args()
     config = load_config(args.config)
 
-    menu = Menu(getattr(config, 'title', []), config.options)
-    option = menu.get_option()
+    if args.option is None:
+        menu = Menu(getattr(config, 'title', []), config.options)
+        option = menu.get_option()
+    else:
+        option = config.options[args.option]
 
     runner = Runner(config.actions)
     runner.execute(option)

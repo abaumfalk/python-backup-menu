@@ -8,4 +8,4 @@ fi
 
 source "${DIR}/venv/bin/activate"
 
-backup -c config.py
+backup -c config.py "$@"
