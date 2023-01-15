@@ -217,11 +217,8 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
-    """Entry point for the menu application.
-    """
-    args = parse_args()
-    config_file = args.config
+def load_config(config_path):
+    config_file = config_path
     if not config_file.is_file():
         print(f"could not find config file '{config_file}'")
         sys.exit(1)
@@ -229,6 +226,15 @@ def main():
     spec = importlib.util.spec_from_file_location('config', config_file)
     config = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(config)
+
+    return config
+
+
+def main():
+    """Entry point for the menu application.
+    """
+    args = parse_args()
+    config = load_config(args.config)
 
     title = getattr(config, 'title', [])
     actions = config.actions
