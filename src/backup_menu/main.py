@@ -3,7 +3,6 @@ Module providing a general backup menu.
 """
 import argparse
 import importlib.util
-import os
 import subprocess
 import sys
 from contextlib import contextmanager, ExitStack
