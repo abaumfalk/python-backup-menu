@@ -150,25 +150,14 @@ def show_mount_point(mount_point):
     input(f"backup is mounted at {mount_point} - press ENTER to unmount")
 
 
-class MenuApp:  # pylint: disable=too-few-public-methods
-    """Class representing the menu-controlled application.
-    """
-    def __init__(self, title, actions, options):
-        self.title = title
-
+class Runner:
+    def __init__(self, actions):
         self.actions = {
             'show mountpoint': show_mount_point
         }
         self.actions.update(actions)
 
-        self.options = options
-
-    def start(self):
-        """Starts the menu app.
-        """
-        self._show_title()
-        option = self._get_option()
-
+    def execute(self, option):
         ret = None
         with ExitStack() as stack:
             for action_name in option:
@@ -181,6 +170,20 @@ class MenuApp:  # pylint: disable=too-few-public-methods
                     ret = action()
                 if isinstance(ret, ContextManager):
                     ret = stack.enter_context(ret)
+
+
+class Menu:  # pylint: disable=too-few-public-methods
+    """Class representing the menu-controlled application.
+    """
+    def __init__(self, title, options):
+        self.title = title
+        self.options = options
+
+    def get_option(self):
+        """Starts the menu app.
+        """
+        self._show_title()
+        return self._get_option()
 
     def _show_title(self):
         for line in self.title:
@@ -235,5 +238,8 @@ def main():
     args = parse_args()
     config = load_config(args.config)
 
-    app = MenuApp(getattr(config, 'title', []), config.actions, config.options)
-    app.start()
+    menu = Menu(getattr(config, 'title', []), config.options)
+    option = menu.get_option()
+
+    runner = Runner(config.actions)
+    runner.execute(option)
