@@ -210,13 +210,17 @@ class MenuApp:  # pylint: disable=too-few-public-methods
                 continue
 
 
-def main():
-    """Entry point for the menu application.
-    """
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', dest='config', type=Path, help="path to a configuration file", required=True)
 
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+def main():
+    """Entry point for the menu application.
+    """
+    args = parse_args()
     config_file = args.config
     if not config_file.is_file():
         print(f"could not find config file '{config_file}'")
