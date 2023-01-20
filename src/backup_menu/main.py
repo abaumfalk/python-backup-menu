@@ -3,6 +3,7 @@ Module providing a general backup menu.
 """
 import argparse
 import importlib.util
+import os
 import subprocess
 import sys
 from contextlib import contextmanager, ExitStack
@@ -99,7 +100,7 @@ class Borg:
         ]
         if exclude_from is not None:
             cmd.append(f"--exclude-from={exclude_from}")
-        finished_process = subprocess.run(cmd, check=False, env=cls.env)
+        finished_process = subprocess.run(cmd, check=False, env=os.environ.update(cls.env))
 
         # check return code (0:ok, 1:warning)
         if finished_process.returncode not in [0, 1]:
@@ -123,7 +124,7 @@ class Borg:
                 f"{repo_folder / repo_name}",
                 target
             ]
-            subprocess.run(cmd, check=True)
+            subprocess.run(cmd, check=True, env=os.environ.update(cls.env))
 
             yield target
 
@@ -133,7 +134,7 @@ class Borg:
                 target
             ]
             while True:
-                finished_process = subprocess.run(cmd, check=False, capture_output=True, env=cls.env)
+                finished_process = subprocess.run(cmd, check=False, capture_output=True, env=os.environ.update(cls.env))
                 if finished_process.returncode == 0:
                     break
                 input(f"Error {finished_process.stderr}, RETURN to retry")
@@ -162,6 +163,11 @@ class Runner:
             for action_name in option:
                 print(f"executing '{action_name}'")
                 action = self.actions[action_name]
+                if isinstance(action, dict):
+                    env = action.get('env', {})
+                    for key, value in env.items():
+                        os.environ[key] = value
+                    action = action['action']
                 sig = signature(action)
                 if sig.parameters:
                     ret = action(ret)

@@ -8,7 +8,12 @@ title = [
 
 
 actions = {
-    'mount local': lambda: mount_manager(target='/media/baumfalk/Sicherung'),
+    'mount local': {
+        'action': lambda: mount_manager(target='/media/baumfalk/Sicherung'),
+        'env': {
+            'BORG_PASSPHRASE': 'XYZ',
+        }
+    },
     'borg backup': lambda repo_folder: Borg.backup_borg(
         'Silentmaxx-borg',
         [
