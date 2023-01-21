@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-DIR=$(cd "$(dirname "$0")" && pwd)
+DIR=$(realpath "$(dirname "$(readlink "${BASH_SOURCE[0]}")")")
 
 if [ ! -e "${DIR}/venv" ]; then
     "${DIR}/make_virtualenv.sh" "${DIR}/venv"
