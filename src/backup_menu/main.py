@@ -252,3 +252,5 @@ def main():
 
     runner = Runner(config.actions)
     runner.execute(option)
+
+    print("Finished.")
