@@ -20,7 +20,9 @@ actions = {
             "/media/baumfalk/Daten/",
             "/home/baumfalk"],
         repo_folder,
-        exclude_from='/home/baumfalk/backup/excludelist-borg',
+        options={
+            'exclude-from': '/home/baumfalk/backup/excludelist-borg',
+        },
     ),
     'mount Silentmaxx-borg': lambda repo_folder: Borg.mount_borg(
         repo_folder,

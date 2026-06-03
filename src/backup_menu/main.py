@@ -75,13 +75,13 @@ class Borg:
     env = {'BORG_RELOCATED_REPO_ACCESS_IS_OK': 'yes'}
 
     @classmethod
-    def backup_borg(cls, repo_name, source, repo_folder, exclude_from=None):
+    def backup_borg(cls, repo_name, source, repo_folder, options=None):
         """Execute a borg backup.
 
         :param repo_name: name of the borg repo
         :param source: sources to be backed up
         :param repo_folder: path to the borg repo
-        :param exclude_from: path to a borg exclude file
+        :param options: borg options, passed to the borg command as --option=value
         :return: name of the borg archive that was added to the repo
         """
         now = datetime.now()
@@ -89,6 +89,7 @@ class Borg:
 
         if not isinstance(source, list):
             source = [source]
+        options = options or {}
 
         cmd = [
             "/usr/bin/borg",
@@ -98,8 +99,8 @@ class Borg:
             f"{repo_folder / repo_name}::{name}",
             *source,
         ]
-        if exclude_from is not None:
-            cmd.append(f"--exclude-from={exclude_from}")
+        for option, value in options.items():
+            cmd.append(f"--{option}={value}")
         finished_process = subprocess.run(cmd, check=False, env=os.environ.update(cls.env))
 
         # check return code (0:ok, 1:warning)
