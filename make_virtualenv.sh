@@ -9,6 +9,7 @@ source ${dest}/bin/activate
 
 pushd ${DIR} > /dev/null
 
+pip install --upgrade pip
 pip install wheel
 pip install pytest
 pip install pytest-cov
