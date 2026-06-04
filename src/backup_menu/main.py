@@ -273,7 +273,7 @@ def run(args: dict, title: list, actions: dict, options: dict):
         name = args['option']
         if name not in options:
             raise RuntimeError(f"Invalid option '{name}'")
-        action_names = options[args['option']]
+        action_names = options[name]
 
     runner = Runner(actions)
     runner.execute(action_names)
