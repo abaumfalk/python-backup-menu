@@ -11,7 +11,7 @@ from datetime import datetime
 from inspect import signature
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import ContextManager
+from typing import ContextManager, Callable
 
 
 @contextmanager
@@ -75,7 +75,7 @@ class Borg:
     env = {'BORG_RELOCATED_REPO_ACCESS_IS_OK': 'yes'}
 
     @classmethod
-    def backup_borg(cls, repo_name, source, repo_folder, options=None):
+    def backup_borg(cls, repo_name, source, repo_folder: Path, options=None):
         """Execute a borg backup.
 
         :param repo_name: name of the borg repo
@@ -111,7 +111,7 @@ class Borg:
 
     @classmethod
     @contextmanager
-    def mount_borg(cls, repo_folder, repo_name):
+    def mount_borg(cls, repo_folder: Path, repo_name):
         """Context manager mounting a borg repo.
 
         :param repo_folder: folder containing the borg repo
@@ -153,7 +153,7 @@ def show_mount_point(mount_point):
 
 class Runner:
     def __init__(self, actions):
-        self.actions = {
+        self.actions: dict[str, Callable] = {
             'show mountpoint': show_mount_point
         }
         self.actions.update(actions)
@@ -227,7 +227,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def load_config(config_file):
+def load_config(config_file: Path):
     if not config_file.is_file():
         print(f"could not find config file '{config_file}'")
         sys.exit(1)
