@@ -256,13 +256,21 @@ def main():
         print(e)
         sys.exit(1)
 
-    run(args, title, actions, options)
+    try:
+        run(args, title, actions, options)
+    except RuntimeError as e:
+        print(e)
+        sys.exit(1)
+
 
 def run(args: dict, title: list, actions: dict, options: dict):
     if args['option'] is None:
         menu = Menu(title, options)
         option = menu.get_option()
     else:
+        name = args['option']
+        if name not in options:
+            raise RuntimeError(f"Invalid option '{name}'")
         option = options[args['option']]
 
     runner = Runner(actions)

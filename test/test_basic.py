@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from backup_menu.main import load_config
+import pytest
+
+from backup_menu.main import load_config, run
 
 
 def test_load_config():
@@ -10,3 +12,9 @@ def test_load_config():
     assert isinstance(config[0], list)
     assert isinstance(config[1], dict)
     assert isinstance(config[2], dict)
+
+
+def test_invalid_option():
+    title, actions, options = load_config(Path('./config_example.py'))
+    with pytest.raises(RuntimeError):
+        run({'option': 'invalid'}, title, actions, options)
