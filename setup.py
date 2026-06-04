@@ -22,6 +22,6 @@ setup(
     entry_points={
         'console_scripts': [
             'backup = backup_menu.main:main',
-    ],
-},
+        ],
+    },
 )

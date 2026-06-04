@@ -265,3 +265,7 @@ def main():
     runner.execute(option)
 
     print("Finished.")
+
+
+if __name__ == "__main__":
+    main()
