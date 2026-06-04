@@ -219,12 +219,12 @@ class Menu:  # pylint: disable=too-few-public-methods
                 continue
 
 
-def parse_args():
+def parse_args() -> dict:
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', dest='config', type=Path, help="path to a configuration file", required=True)
     parser.add_argument('-o', dest='option', help="option to be executed (omits the menu)")
 
-    return parser.parse_args()
+    return vars(parser.parse_args())
 
 
 def load_config(config_file: Path):
@@ -250,16 +250,16 @@ def main():
     """
     args = parse_args()
     try:
-        title, actions, options = load_config(args.config)
+        title, actions, options = load_config(args['config'])
     except RuntimeError as e:
         print(e)
         sys.exit(1)
 
-    if args.option is None:
+    if args['option'] is None:
         menu = Menu(title, options)
         option = menu.get_option()
     else:
-        option = options[args.option]
+        option = options[args['option']]
 
     runner = Runner(actions)
     runner.execute(option)
