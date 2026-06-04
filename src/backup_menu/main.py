@@ -249,12 +249,16 @@ def main():
     """Entry point for the menu application.
     """
     args = parse_args()
+
     try:
         title, actions, options = load_config(args['config'])
     except RuntimeError as e:
         print(e)
         sys.exit(1)
 
+    run(args, title, actions, options)
+
+def run(args: dict, title: list, actions: dict, options: dict):
     if args['option'] is None:
         menu = Menu(title, options)
         option = menu.get_option()
