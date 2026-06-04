@@ -158,10 +158,10 @@ class Runner:
         }
         self.actions.update(actions)
 
-    def execute(self, option):
+    def execute(self, action_names: list):
         ret = None
         with ExitStack() as stack:
-            for action_name in option:
+            for action_name in action_names:
                 print(f"executing '{action_name}'")
                 action = self.actions[action_name]
                 if isinstance(action, dict):
@@ -181,11 +181,11 @@ class Runner:
 class Menu:  # pylint: disable=too-few-public-methods
     """Class representing the menu-controlled application.
     """
-    def __init__(self, title, options):
+    def __init__(self, title, options: dict[str, list]):
         self.title = title
         self.options = options
 
-    def get_option(self):
+    def get_option(self) -> list:
         """Starts the menu app.
         """
         self._show_title()
@@ -195,7 +195,7 @@ class Menu:  # pylint: disable=too-few-public-methods
         for line in self.title:
             print(line)
 
-    def _get_option(self):
+    def _get_option(self) -> list:
         keys = list(self.options.keys())
 
         while True:
@@ -217,6 +217,8 @@ class Menu:  # pylint: disable=too-few-public-methods
                 print('Invalid choice!')
                 print()
                 continue
+
+        return []  # should never be reached
 
 
 def parse_args() -> dict:
@@ -266,15 +268,15 @@ def main():
 def run(args: dict, title: list, actions: dict, options: dict):
     if args['option'] is None:
         menu = Menu(title, options)
-        option = menu.get_option()
+        action_names = menu.get_option()
     else:
         name = args['option']
         if name not in options:
             raise RuntimeError(f"Invalid option '{name}'")
-        option = options[args['option']]
+        action_names = options[args['option']]
 
     runner = Runner(actions)
-    runner.execute(option)
+    runner.execute(action_names)
 
     print("Finished.")
 
