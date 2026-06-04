@@ -229,29 +229,39 @@ def parse_args():
 
 def load_config(config_file: Path):
     if not config_file.is_file():
-        print(f"could not find config file '{config_file}'")
-        sys.exit(1)
+        raise RuntimeError(f"could not find config file '{config_file}'")
 
     spec = importlib.util.spec_from_file_location('config', config_file)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"could not load config file '{config_file}'")
+
     config = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(config)
 
-    return config
+    for item in ['title', 'actions', 'options']:
+        if not hasattr(config, item):
+            raise RuntimeError(f"could not find '{item}' in config file '{config_file}'")
+
+    return config.title, config.actions, config.options
 
 
 def main():
     """Entry point for the menu application.
     """
     args = parse_args()
-    config = load_config(args.config)
+    try:
+        title, actions, options = load_config(args.config)
+    except RuntimeError as e:
+        print(e)
+        sys.exit(1)
 
     if args.option is None:
-        menu = Menu(getattr(config, 'title', []), config.options)
+        menu = Menu(title, options)
         option = menu.get_option()
     else:
-        option = config.options[args.option]
+        option = options[args.option]
 
-    runner = Runner(config.actions)
+    runner = Runner(actions)
     runner.execute(option)
 
     print("Finished.")
