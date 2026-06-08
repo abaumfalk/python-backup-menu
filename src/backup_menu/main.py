@@ -101,7 +101,10 @@ class Borg:
             *source,
         ]
         for option, value in options.items():
-            cmd.append(f"--{option}={value}")
+            if value is not None:
+                cmd.append(f"--{option}={value}")
+            else:
+                cmd.append(f"--{option}")
         finished_process = subprocess.run(cmd, check=False, env=os.environ.update(cls.env))
 
         # check return code (0:ok, 1:warning)
