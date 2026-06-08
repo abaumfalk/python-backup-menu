@@ -1,4 +1,4 @@
-from backup_menu.main import mount_manager, Borg
+from backup_menu.main import mount_manager, Borg, dry_run
 
 title = [
     "******************",

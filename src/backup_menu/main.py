@@ -13,6 +13,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import ContextManager, Callable
 
+dry_run = False
 
 @contextmanager
 def mount_manager(mount_args=None, target=None, sudo=False):
@@ -105,6 +106,9 @@ class Borg:
                 cmd.append(f"--{option}={value}")
             else:
                 cmd.append(f"--{option}")
+        if dry_run:
+            cmd.append("--list")
+            cmd.append("--dry-run")
         finished_process = subprocess.run(cmd, check=False, env=os.environ.update(cls.env))
 
         # check return code (0:ok, 1:warning)
@@ -229,6 +233,8 @@ def parse_args() -> dict:
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', dest='config', type=Path, help="path to a configuration file", required=True)
     parser.add_argument('-o', dest='option', help="option to be executed (omits the menu)")
+    parser.add_argument('-n', '--dry-run', action='store_true',
+                        help="perform a trial backup only (and show what would be done)")
 
     return vars(parser.parse_args())
 
@@ -270,6 +276,11 @@ def main():
 
 
 def run(args: dict, title: list, actions: dict, options: dict):
+    if args['dry_run']:
+        global dry_run
+        dry_run = True
+        print("Note: dry-run is enabled - no real backup will be performed")
+
     if args['option'] is None:
         menu = Menu(title, options)
         action_names = menu.get_option()
