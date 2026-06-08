@@ -261,7 +261,7 @@ def main():
 
     try:
         run(args, title, actions, options)
-    except RuntimeError as e:
+    except Exception as e:
         print(e)
         sys.exit(1)
 
