@@ -73,6 +73,7 @@ def mount_manager(mount_args=None, target=None, sudo=False):
 
 class Borg:
     env = {'BORG_RELOCATED_REPO_ACCESS_IS_OK': 'yes'}
+    borg = "/usr/bin/borg"
 
     @classmethod
     def backup_borg(cls, repo_name, source, repo_folder: Path, options=None):
@@ -92,7 +93,7 @@ class Borg:
         options = options or {}
 
         cmd = [
-            "/usr/bin/borg",
+            cls.borg,
             "create",
             "--stats",
             "--progress",
@@ -120,7 +121,7 @@ class Borg:
         """
         with TemporaryDirectory() as target:
             cmd = [
-                "/usr/bin/borg",
+                cls.borg,
                 "mount",
                 f"{repo_folder / repo_name}",
                 target
@@ -130,7 +131,7 @@ class Borg:
             yield target
 
             cmd = [
-                "/usr/bin/borg",
+                cls.borg,
                 "umount",
                 target
             ]
